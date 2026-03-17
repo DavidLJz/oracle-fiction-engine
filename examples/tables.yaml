@@ -1,0 +1,27 @@
+tables:
+  emotion:
+    - dismissive
+    - sarcastic
+    - suspicious
+    - supportive
+    - hostile
+    - evasive
+  action:
+    - speaks aggressively
+    - avoids the question
+    - changes the subject
+    - reveals a minor clue
+    - tries to leave the scene
+  information:
+    - nothing new
+    - minor detail
+    - misleading clue
+    - useful clue
+    - secret revealed
+    - unexpected twist
+  environment_disturbance:
+    - weather changes abruptly
+    - a loud noise interrupts
+    - a new character enters
+    - a technical failure occurs
+    - an animal appears

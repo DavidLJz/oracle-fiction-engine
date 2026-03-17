@@ -1,0 +1,3 @@
+# Core settings for Oracle Engine
+editor: "notepad"  # On Windows, 'notepad' or 'code --wait'
+turn_timer_seconds: 0

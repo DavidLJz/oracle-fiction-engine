@@ -1,0 +1,10 @@
+characters:
+  Mira:
+    wants: Keep the artifact a secret
+    fear: Alex discovering the truth
+    misunderstanding: Believes Alex already knows
+
+  Alex:
+    wants: Find out what happened to the artifact
+    fear: Being betrayed again
+    misunderstanding: Believes Mira is working for the enemy
