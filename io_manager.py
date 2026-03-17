@@ -6,29 +6,32 @@ from models import AppState, Character, TurnRecord
 
 DELIMITER = "--- WRITE BELOW THIS LINE (Do not delete this line) ---"
 
-def load_workspace(root_dir: str = ".") -> AppState:
-    """Loads config, tables, and characters from the directory structure."""
+def load_workspace(config_path: str = "config.yaml", tables_path: str = "tables.yaml", char_dir: str = "characters") -> AppState:
+    """Loads config, tables, and characters from the specified paths."""
     # Load Config
-    config_path = os.path.join(root_dir, "config.yaml")
+    if not os.path.exists(config_path):
+        raise FileNotFoundError(f"Config file not found at: {config_path}")
     with open(config_path, 'r') as f:
-        config = yaml.safe_load(f)
+        config = yaml.safe_load(f) or {}
 
     # Load Tables
-    tables_path = os.path.join(root_dir, "tables.yaml")
+    if not os.path.exists(tables_path):
+        raise FileNotFoundError(f"Tables file not found at: {tables_path}")
     with open(tables_path, 'r') as f:
-        tables = yaml.safe_load(f).get('tables', {})
+        loaded = yaml.safe_load(f) or {}
+        tables = loaded.get('tables', {})
 
     # Load Characters
+    if not os.path.exists(char_dir):
+        raise FileNotFoundError(f"Characters directory not found at: {char_dir}")
     characters = {}
-    char_dir = os.path.join(root_dir, "characters")
-    if os.path.exists(char_dir):
-        for filename in os.listdir(char_dir):
-            if filename.endswith(".yaml"):
-                with open(os.path.join(char_dir, filename), 'r') as f:
-                    data = yaml.safe_load(f)
-                    chars_in_file = data.get('characters', {})
-                    for name, drives in chars_in_file.items():
-                        characters[name] = Character(name=name, drives=drives)
+    for filename in os.listdir(char_dir):
+        if filename.endswith(".yaml"):
+            with open(os.path.join(char_dir, filename), 'r') as f:
+                data = yaml.safe_load(f) or {}
+                chars_in_file = data.get('characters', {})
+                for name, drives in chars_in_file.items():
+                    characters[name] = Character(name=name, drives=drives)
 
     return AppState(config=config, tables=tables, characters=characters)
 

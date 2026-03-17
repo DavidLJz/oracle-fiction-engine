@@ -1,5 +1,7 @@
 import click
 import random
+import os
+import logging
 from datetime import datetime
 import io_manager
 import generator
@@ -7,17 +9,29 @@ import ui
 import editor
 from models import TurnRecord
 
+def setup_logging():
+    os.makedirs("logs", exist_ok=True)
+    logging.basicConfig(
+        filename=os.path.join("logs", "oracle_engine.log"),
+        level=logging.ERROR,
+        format="%(asctime)s - %(levelname)s - %(message)s"
+    )
+
 @click.group()
 def cli():
     """Oracle Engine: A semi-automated writing adventure."""
     pass
 
 @cli.command()
-def start():
-    """Starts a new writing session in the current directory."""
+@click.option('--config', default='config.yaml', help='Path to config file')
+@click.option('--tables', default='tables.yaml', help='Path to tables file')
+@click.option('--chars', default='characters', help='Path to characters directory')
+def start(config, tables, chars):
+    """Starts a new writing session."""
+    setup_logging()
     try:
         # 1. Initialize
-        state = io_manager.load_workspace()
+        state = io_manager.load_workspace(config, tables, chars)
         state.session_file_path = io_manager.init_new_session()
         
         ui.display_welcome(state.session_file_path)
@@ -75,9 +89,11 @@ def start():
             ui.display_status("Turn recorded successfully.")
 
     except FileNotFoundError as e:
-        ui.display_error(f"Workspace not initialized correctly. Missing: {e.filename}")
+        logging.error(f"Initialization Error: {e}")
+        ui.display_error(str(e))
     except Exception as e:
-        ui.display_error(f"An unexpected error occurred: {e}")
+        logging.exception("Unhandled Exception in main loop")
+        ui.display_error(f"A fatal error occurred. Check logs/oracle_engine.log for details.\nError: {e}")
 
 if __name__ == "__main__":
     cli()
