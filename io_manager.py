@@ -82,7 +82,12 @@ def init_new_session(root_dir: str = ".") -> str:
         if previous_context:
             f.write("> ### Previously...\n")
             for line in previous_context.splitlines():
-                f.write(f"> {line}\n")
+                # Strip existing blockquotes to prevent infinite nesting on repeated sessions
+                clean_line = line.lstrip("> \t")
+                if clean_line:
+                    f.write(f"> {clean_line}\n")
+                else:
+                    f.write(">\n")
             f.write("\n---\n\n")
             
     return session_path
