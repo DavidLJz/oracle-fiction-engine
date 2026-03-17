@@ -23,12 +23,24 @@ def cli():
     pass
 
 @cli.command()
-@click.option('--config', default='config.yaml', help='Path to config file')
-@click.option('--tables', default='tables.yaml', help='Path to tables file')
-@click.option('--chars', default='characters', help='Path to characters directory')
+@click.option('--config', '-c', default='config.yaml', help='Path to your config.yaml file.')
+@click.option('--tables', '-t', default='tables.yaml', help='Path to your tables.yaml file.')
+@click.option('--chars', '-ch', default='characters', help='Path to your characters/ directory.')
 def start(config, tables, chars):
-    """Starts a new writing session."""
+    """Starts a new writing session.
+    
+    You can specify custom paths for your project files using the flags.
+    Example: python main.py start --config my_custom_config.yaml
+    """
     setup_logging()
+    
+    # Inform the user about the paths being used
+    ui.display_status(f"Initializing with:")
+    ui.display_status(f"  - Config: {config}")
+    ui.display_status(f"  - Tables: {tables}")
+    ui.display_status(f"  - Characters: {chars}")
+    ui.display_status("(Use --help to see how to override these paths)\n")
+
     try:
         # 1. Initialize
         state = io_manager.load_workspace(config, tables, chars)
@@ -67,8 +79,10 @@ def start(config, tables, chars):
             ui.display_system_prompt(prompt)
             temp_file = io_manager.prepare_temp_file(prompt)
             
-            ui.display_status(f"Opening {state.config.get('editor', 'editor')}...")
-            editor.open_in_editor(temp_file, state.config.get('editor', 'notepad'))
+            ui.display_status(f"Opening editor...")
+            # We use state.config.get('editor') but fallback to 'notepad' for Windows safety
+            editor_cmd = state.config.get('editor', 'notepad')
+            editor.open_in_editor(temp_file, editor_cmd)
             
             # 5. Parse & Save
             prose = io_manager.parse_and_cleanup_temp_file(temp_file)
