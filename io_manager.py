@@ -6,7 +6,40 @@ from models import AppState, Character, TurnRecord
 
 DELIMITER = "--- WRITE BELOW THIS LINE (Do not delete this line) ---"
 
-def load_workspace(config_path: str = "config.yaml", tables_path: str = "tables.yaml", char_dir: str = "characters") -> AppState:
+def load_characters(filepath: str, loaded_paths: Optional[set] = None) -> Dict[str, Character]:
+    """Recursively loads characters from a file, resolving 'include' directives."""
+    if loaded_paths is None:
+        loaded_paths = set()
+        
+    abs_path = os.path.abspath(filepath)
+    if abs_path in loaded_paths:
+        return {}  # Prevent infinite loops from circular includes
+        
+    if not os.path.exists(abs_path):
+        raise FileNotFoundError(f"Character/Roster file not found: {abs_path}")
+        
+    loaded_paths.add(abs_path)
+    base_dir = os.path.dirname(abs_path)
+    
+    with open(abs_path, 'r') as f:
+        data = yaml.safe_load(f) or {}
+        
+    characters = {}
+    
+    # 1. Process includes first
+    if 'include' in data and isinstance(data['include'], list):
+        for inc_path in data['include']:
+            full_inc_path = os.path.join(base_dir, inc_path)
+            characters.update(load_characters(full_inc_path, loaded_paths))
+            
+    # 2. Process characters defined in this file (overwrites if names collide)
+    if 'characters' in data and isinstance(data['characters'], dict):
+        for name, drives in data['characters'].items():
+            characters[name] = Character(name=name, drives=drives)
+            
+    return characters
+
+def load_workspace(config_path: str = "config.yaml", tables_path: str = "tables.yaml", char_file: str = "characters.yaml") -> AppState:
     """Loads config, tables, and characters from the specified paths."""
     # Load Config
     if not os.path.exists(config_path):
@@ -22,16 +55,7 @@ def load_workspace(config_path: str = "config.yaml", tables_path: str = "tables.
         tables = loaded.get('tables', {})
 
     # Load Characters
-    if not os.path.exists(char_dir):
-        raise FileNotFoundError(f"Characters directory not found at: {char_dir}")
-    characters = {}
-    for filename in os.listdir(char_dir):
-        if filename.endswith(".yaml"):
-            with open(os.path.join(char_dir, filename), 'r') as f:
-                data = yaml.safe_load(f) or {}
-                chars_in_file = data.get('characters', {})
-                for name, drives in chars_in_file.items():
-                    characters[name] = Character(name=name, drives=drives)
+    characters = load_characters(char_file)
 
     return AppState(config=config, tables=tables, characters=characters)
 

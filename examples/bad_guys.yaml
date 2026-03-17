@@ -1,0 +1,11 @@
+# bad guys example definition for characters
+characters:
+  Villain1:
+    wants: Take over the world
+    fear: Being stopped by the heroes
+    misunderstanding: Believes the heroes are weak and won't stop him
+
+  Villain2:
+    wants: Steal the powerful artifact
+    fear: Getting caught by the authorities
+    misunderstanding: Believes the artifact is indestructible and will make him invincible

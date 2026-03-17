@@ -1,0 +1,5 @@
+# Master Roster for Characters in Arc "A"
+include:
+  # Each element in this list is a relative or absolute path to a YAML file that contains character data.
+  - ./crew.yaml
+  - ./bad_guys.yaml

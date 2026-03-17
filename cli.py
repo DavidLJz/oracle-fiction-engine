@@ -25,7 +25,7 @@ def cli():
 @cli.command()
 @click.option('--config', '-c', default='config.yaml', help='Path to your config.yaml file.')
 @click.option('--tables', '-t', default='tables.yaml', help='Path to your tables.yaml file.')
-@click.option('--chars', '-ch', default='characters', help='Path to your characters/ directory.')
+@click.option('--chars', '-ch', default='characters.yaml', help='Path to a character or roster YAML file.')
 def start(config, tables, chars):
     """Starts a new writing session.
     
@@ -38,7 +38,7 @@ def start(config, tables, chars):
     ui.display_status(f"Initializing with:")
     ui.display_status(f"  - Config: {config}")
     ui.display_status(f"  - Tables: {tables}")
-    ui.display_status(f"  - Characters: {chars}")
+    ui.display_status(f"  - Roster/Chars: {chars}")
     ui.display_status("(Use --help to see how to override these paths)\n")
 
     try:
