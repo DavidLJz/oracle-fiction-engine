@@ -72,10 +72,15 @@ def init_new_session(root_dir: str = ".") -> str:
     existing_sessions = sorted([f for f in os.listdir(sessions_dir) if f.endswith(".md")])
     if existing_sessions:
         last_session = os.path.join(sessions_dir, existing_sessions[-1])
-        with open(last_session, 'r', encoding='utf-8') as f:
-            lines = f.readlines()
-            # Grab last 20 lines as context
-            previous_context = "".join(lines[-20:])
+        try:
+            with open(last_session, 'r', encoding='utf-8') as f:
+                lines = f.readlines()
+        except UnicodeDecodeError:
+            with open(last_session, 'r', errors='replace') as f:
+                lines = f.readlines()
+        
+        # Grab last 20 lines as context
+        previous_context = "".join(lines[-20:])
     
     with open(session_path, 'w', encoding='utf-8') as f:
         f.write(f"--- SESSION START: {datetime.now().isoformat()} ---\n\n")
@@ -104,10 +109,13 @@ def prepare_temp_file(prompt: str, root_dir: str = ".") -> str:
 def parse_and_cleanup_temp_file(temp_path: str) -> str:
     if not os.path.exists(temp_path):
         return ""
-    
-    with open(temp_path, 'r', encoding='utf-8') as f:
-        content = f.read()
-    
+
+    try:
+        with open(temp_path, 'r', encoding='utf-8') as f:
+            content = f.read()
+    except UnicodeDecodeError:
+        with open(temp_path, 'r', errors='replace') as f:
+            content = f.read()    
     prose = ""
     if DELIMITER in content:
         prose = content.split(DELIMITER)[-1].strip()

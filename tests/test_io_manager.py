@@ -79,3 +79,20 @@ def test_temp_file_lifecycle(tmp_path):
     
     assert prose == "And here is the user's beautiful prose."
     assert not os.path.exists(temp_path_str)
+
+def test_parse_and_cleanup_with_encoding_issue(tmp_path):
+    temp_path_str = str(tmp_path / ".turn.md")
+    
+    # Create a file with a non-UTF-8 byte (0xAE is ® in Latin-1 but invalid in UTF-8)
+    # The delimiter and some system prompt needs to be there
+    with open(temp_path_str, 'wb') as f:
+        f.write(b"> System Prompt\n")
+        f.write(DELIMITER.encode('utf-8'))
+        f.write(b"\nUser prose with a tricky character: \xae")
+    
+    # Should not raise UnicodeDecodeError and should return the prose with the character replaced
+    prose = parse_and_cleanup_temp_file(temp_path_str)
+    
+    # 'replace' strategy usually uses the Unicode replacement character (U+FFFD)
+    assert "\ufffd" in prose
+    assert not os.path.exists(temp_path_str)
